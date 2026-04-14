@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Architect Tycoon</title>
+<title>Architect Clicker</title>
 <style>
 :root {
 --bg-page: #f5f7fa;
@@ -243,7 +243,7 @@ input { font-family: inherit; font-size: 14px; }
 
 <div id="auth-screen">
  <div class="auth-card">
-  <h1 class="auth-title">Architect Tycoon</h1>
+  <h1 class="auth-title">Architect Clicker</h1>
   <p class="auth-subtitle">Система доступа к проектированию</p>
   <div class="auth-tabs">
    <button class="auth-tab active" data-tab="login">Вход</button>
@@ -266,10 +266,10 @@ input { font-family: inherit; font-size: 14px; }
 
 <div id="game-screen" hidden>
  <header class="app-header">
-  <div class="logo">Architect Tycoon</div>
+  <div class="logo">Architect Clicker</div>
   <div class="header-right">
    <span class="player-badge">👤 <span id="player-name"></span></span>
-   <button id="leaderboard-btn" class="btn-ghost">🏆 Лидерборд</button>
+   <button id="leaderboard-btn" class="btn-ghost">🏆 Доска Лидеров</button>
    <button id="logout-btn" class="btn-ghost">Выход</button>
   </div>
  </header>
@@ -305,7 +305,7 @@ input { font-family: inherit; font-size: 14px; }
 <div id="leaderboard-modal" class="modal-backdrop" hidden>
  <div class="modal-card">
   <div class="modal-header">
-   <h2>🏆 Топ архитекторов</h2>
+   <h2>🏆 Доска Лидеров</h2>
    <button class="modal-close" id="leaderboard-close">×</button>
   </div>
   <div id="leaderboard-list"></div>
@@ -649,23 +649,42 @@ async function saveGame() {
 }
 function mergeState(defaults,loaded) {
  const result={...defaults,...loaded};
- // Объединяем entities корректно - загруженные entities заменяют default
- if(loaded.entities) {
-  result.entities={...defaults.entities,...loaded.entities};
+ 
+ // Если есть загруженные данные — полностью перезаписываем
+ if(loaded && Object.keys(loaded).length > 0) {
+  // Копируем entities из loaded, но добавляем missing поля из defaults
+  if(loaded.entities) {
+   result.entities = { ...defaults.entities };
+   for(const key in loaded.entities) {
+    result.entities[key] = {
+     ...defaults.entities[key],
+     ...loaded.entities[key]
+    };
+   }
+  }
+  
+  // Остальные поля из loaded
+  if(loaded.upgrades !== undefined) result.upgrades = [...(loaded.upgrades ||[])];
+  if(loaded.achievements !== undefined) result.achievements = [...(loaded.achievements||[])];
+  if(loaded.activeEffects !== undefined) result.activeEffects = [...(loaded.activeEffects||[])];
+  if(loaded.stats) result.stats = { ...defaults.stats, ...loaded.stats };
+  if(loaded.clickPower !== undefined) result.clickPower = loaded.clickPower;
+  if(loaded.dp !== undefined) result.dp = loaded.dp;
+  if(loaded.last_save !== undefined) result.last_save = loaded.last_save;
+  if(loaded.offline_bonus !== undefined) result.offline_bonus = loaded.offline_bonus;
+  
  } else {
-  result.entities={...defaults.entities};
+  result.entities = { ...defaults.entities };
+  result.upgrades = [];
+  result.achievements = [];
+  result.activeEffects = [];
+  result.stats = { ...defaults.stats };
+  result.clickPower = defaults.clickPower;
+  result.dp = defaults.dp;
+  result.last_save = defaults.last_save;
+  result.offline_bonus = null;
  }
- result.stats={...defaults.stats,...(loaded.stats||{})};
- // Объединяем upgrades
- result.upgrades=loaded.upgrades? [...(loaded.upgrades||[])]: [...(defaults.upgrades||[])];
- result.achievements=loaded.achievements? [...(loaded.achievements||[])]: [...(defaults.achievements||[])];
- result.activeEffects=loaded.activeEffects? [...(loaded.activeEffects||[])]: [...(defaults.activeEffects||[])];
- // Восстанавливаем clickPower из загруженного состояния
- result.clickPower=loaded.clickPower!==undefined ? loaded.clickPower : defaults.clickPower;
- result.last_save=loaded.last_save||0;
- result.offline_bonus=loaded.offline_bonus||null;
- // Восстанавливаем dp из загруженного состояния
- result.dp=loaded.dp!==undefined ? loaded.dp : defaults.dp;
+ 
  return result;
 }
 async function loadGame() {

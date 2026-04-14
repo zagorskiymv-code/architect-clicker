@@ -102,7 +102,7 @@ def register():
         return jsonify({"error": "Пароль должен быть минимум 6 символов"}), 400
     
     if access_code != ACCESS_CODE:
-        return jsonify({"error": "Неверный код доступа. Обратитесь к архитектору"}), 403
+        return jsonify({"error": "Неверный код доступа. Обратитесь к разработчику"}), 403
     
     db = get_db()
     existing = db.execute("SELECT id FROM users WHERE username = ?", (username,)).fetchone()
@@ -289,6 +289,10 @@ def save_game():
     last_save = excluded.last_save,
     updated_at = CURRENT_TIMESTAMP
     """, (session["user_id"], state_str, dp, dp, last_save))
+    
+    print(f"Saving for user {session['username']}: dp={dp}, state_json keys={list(state.keys())}")
+    if 'entities' in state:
+        print(f"  Entities: {state['entities']}")
     
     db.commit()
     

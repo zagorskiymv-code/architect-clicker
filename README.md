@@ -1,4 +1,4 @@
-# Architect Tycoon
+# Architect Clicker
 
 ## Запуск
 1. pip install -r requirements.txt
