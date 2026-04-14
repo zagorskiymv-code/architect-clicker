@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Architect Tycoon</title>
+<style>
+:root {
+--bg-page: #f5f7fa;
+--bg-card: #ffffff;
+--bg-card-hover: #fafbfd;
+--bg-subtle: #f0f4fa;
+--accent: #4a90e2;
+--accent-hover: #3a7bc8;
+--accent-soft: #e8f0fa;
+--success: #4ade80;
+--success-soft: #e8fbef;
+--warning: #ffb84d;
+--warning-soft: #fff5e5;
+--danger: #ff5757;
+--danger-soft: #ffe8e8;
+--text-primary: #1a2332;
+--text-secondary: #6b7a8f;
+--text-muted: #9aa7bd;
+--border: #e4e9f0;
+--border-strong: #d0d8e3;
+--shadow-sm: 0 1px 2px rgba(26, 35, 50, 0.04);
+--shadow-md: 0 4px 12px rgba(26, 35, 50, 0.08);
+--shadow-lg: 0 8px 24px rgba(26, 35, 50, 0.12);
+--radius-sm: 6px;
+--radius-md: 10px;
+--radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+ background: var(--bg-page); color: var(--text-primary); font-size: 14px; line-height: 1.5;
+ min-height: 100vh;
+}
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input { font-family: inherit; font-size: 14px; }
+[hidden] { display: none !important; }
+
+#auth-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.auth-card {
+ background: var(--bg-card); border-radius: var(--radius-lg); padding: 40px; max-width: 400px; width: 100%;
+ box-shadow: var(--shadow-md); border: 1px solid var(--border);
+}
+.auth-title { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+.auth-subtitle { font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 24px; }
+.auth-tabs { display: flex; gap: 16px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+.auth-tab {
+ padding: 10px 0; font-size: 14px; font-weight: 600; color: var(--text-secondary);
+ border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+.auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.auth-form { display: flex; flex-direction: column; gap: 14px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+.form-field input {
+ padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-md);
+ transition: all 120ms;
+}
+.form-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.btn-primary {
+ background: var(--accent); color: white; padding: 12px; border-radius: var(--radius-md);
+ font-size: 14px; font-weight: 600; transition: background 120ms; margin-top: 4px;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-message {
+ margin-top: 16px; padding: 12px; border-radius: var(--radius-md); font-size: 13px;
+}
+.auth-message.error { background: var(--danger-soft); border: 1px solid var(--danger); color: var(--text-primary); }
+.auth-message.success { background: var(--success-soft); border: 1px solid var(--success); color: var(--text-primary); }
+
+.app-header {
+ background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0 24px;
+ height: 64px; display: flex; align-items: center; justify-content: space-between;
+}
+.logo { font-size: 18px; font-weight: 600; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.player-badge {
+ padding: 6px 12px; background: var(--bg-subtle); border-radius: var(--radius-md); font-size: 13px;
+}
+.btn-ghost {
+ padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+ border-radius: var(--radius-md); transition: all 120ms;
+}
+.btn-ghost:hover { background: var(--bg-subtle); }
+#logout-btn:hover { color: var(--danger); }
+
+.game-main {
+ max-width: 1200px; margin: 0 auto; padding: 24px;
+ display: grid; grid-template-columns: 40% 1fr; gap: 24px;
+}
+.left-col, .right-col { display: flex; flex-direction: column; gap: 16px; }
+.section-title {
+ font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;
+ letter-spacing: 1.5px; margin-top: 8px;
+}
+.btn-text-muted {
+ color: var(--text-muted); font-size: 12px; text-decoration: underline; align-self: center;
+ margin-top: 16px; padding: 8px;
+}
+
+.dp-card {
+ background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg);
+ padding: 32px; text-align: center; font-variant-numeric: tabular-nums;
+}
+.dp-label {
+ font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;
+ letter-spacing: 1.5px;
+}
+.dp-value { font-size: 48px; font-weight: 700; margin: 8px 0; transition: transform 80ms ease; }
+.dp-value.tick { transform: scale(1.02); }
+.dp-rate { font-size: 16px; font-weight: 500; color: var(--accent); }
+
+.main-click-btn {
+ background: linear-gradient(135deg, var(--accent-soft) 0%, var(--bg-subtle) 100%);
+ border: 2px dashed var(--border-strong); border-radius: var(--radius-lg);
+ padding: 32px 24px; width: 100%; min-height: 200px;
+ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+ position: relative; overflow: hidden; transition: all 120ms ease;
+}
+.main-click-btn:hover { border-color: var(--accent); border-style: solid; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.main-click-btn:active { transform: scale(0.98); }
+.click-icon { font-size: 40px; }
+.click-title { font-size: 16px; font-weight: 600; }
+.click-hint { font-size: 12px; color: var(--text-secondary); }
+.float-text {
+ position: absolute; pointer-events: none; color: var(--accent); font-size: 18px; font-weight: 700;
+ animation: floatUp 800ms ease-out forwards;
+}
+@keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-60px); } }
+
+.entity-card {
+ background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md);
+ padding: 16px; transition: all 120ms ease; position: relative; text-align: left;
+}
+.entity-card.affordable { border-color: var(--accent); cursor: pointer; }
+.entity-card.affordable:hover { background: var(--bg-card-hover); box-shadow: var(--shadow-sm); }
+.entity-card.locked { opacity: 0.5; }
+.entity-card.flash { animation: cardFlash 300ms ease; }
+@keyframes cardFlash { 0%, 100% { background: var(--bg-card); } 50% { background: var(--success-soft); } }
+.entity-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.entity-icon { font-size: 24px; width: 32px; text-align: center; }
+.entity-name { font-size: 14px; font-weight: 600; }
+.entity-desc { font-size: 12px; color: var(--text-secondary); }
+.entity-row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.entity-cost {
+ font-size: 16px; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums;
+}
+.entity-cost.unaffordable { color: var(--text-muted); }
+.entity-owned { font-size: 12px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.entity-progress { height: 3px; background: var(--accent-soft); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.entity-progress-fill { height: 100%; background: var(--accent); transition: width 120ms ease; }
+.entity-block-msg { font-size: 11px; color: var(--danger); margin-top: 6px; }
+.upgrade-card.purchased { background: var(--success-soft); border-color: var(--success); }
+
+.event-banner {
+ background: var(--warning-soft); border-left: 4px solid var(--warning); border-radius: var(--radius-md);
+ padding: 16px; animation: slideInDown 320ms ease;
+}
+.event-banner.negative { background: var(--danger-soft); border-color: var(--danger); }
+.event-banner.positive { background: var(--success-soft); border-color: var(--success); }
+@keyframes slideInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.event-title { font-weight: 600; margin-bottom: 4px; }
+.event-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+.event-btn {
+ background: var(--text-primary); color: white; padding: 8px 16px; border-radius: var(--radius-sm);
+ font-size: 13px; font-weight: 600;
+}
+.active-effects { display: flex; flex-wrap: wrap; gap: 6px; }
+.effect-chip {
+ background: var(--success-soft); color: var(--text-primary); padding: 4px 10px; border-radius: 999px;
+ font-size: 12px; font-weight: 500;
+}
+.achievements-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.achievement {
+ width: 40px; height: 40px; border-radius: 50%; background: var(--bg-subtle);
+ display: flex; align-items: center; justify-content: center; font-size: 18px;
+ opacity: 0.4; transition: all 200ms; cursor: help;
+}
+.achievement.got { background: var(--accent-soft); opacity: 1; }
+
+#toast-container {
+ position: fixed; top: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px;
+ z-index: 2000; pointer-events: none;
+}
+.toast {
+ background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+ border-radius: var(--radius-md); padding: 12px 16px; box-shadow: var(--shadow-md);
+ display: flex; align-items: center; gap: 12px; min-width: 240px;
+ animation: toastIn 320ms ease, toastOut 320ms ease 2700ms forwards;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toastOut { to { opacity: 0; transform: translateX(20px); } }
+.toast-icon { font-size: 24px; }
+.toast-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+.toast-name { font-size: 14px; font-weight: 600; }
+
+.modal-backdrop {
+ position: fixed; inset: 0; background: rgba(26, 35, 50, 0.5); backdrop-filter: blur(4px);
+ display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+}
+.modal-card {
+ background: var(--bg-card); border-radius: var(--radius-lg); padding: 32px;
+ max-width: 480px; width: 100%; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-header h2 { font-size: 20px; font-weight: 700; }
+.modal-close { font-size: 28px; color: var(--text-muted); width: 32px; height: 32px; }
+.leaderboard-row {
+ display: flex; align-items: center; gap: 16px; padding: 12px; border-radius: var(--radius-md);
+ margin-bottom: 8px; background: var(--bg-subtle);
+}
+.leaderboard-row.me { background: var(--accent-soft); border: 1px solid var(--accent); }
+.leaderboard-rank {
+ width: 32px; height: 32px; border-radius: 50%; background: var(--bg-card);
+ display: flex; align-items: center; justify-content: center; font-weight: 700;
+ color: var(--text-secondary);
+}
+.leaderboard-row:nth-child(1) .leaderboard-rank { background: #ffd700; color: #1a2332; }
+.leaderboard-row:nth-child(2) .leaderboard-rank { background: #c0c0c0; color: #1a2332; }
+.leaderboard-row:nth-child(3) .leaderboard-rank { background: #cd7f32; color: white; }
+.leaderboard-username { flex: 1; font-weight: 600; }
+.leaderboard-dp { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.modal-footer { margin-top: 16px; display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 1023px) { .game-main { grid-template-columns: 1fr; } }
+@media (max-width: 767px) {
+ .dp-value { font-size: 36px; }
+ .main-click-btn { min-height: 160px; }
+ .app-header { padding: 0 12px; }
+ .header-right .btn-ghost { padding: 8px; font-size: 12px; }
+ .player-badge { padding: 4px 8px; font-size: 12px; }
+ .game-main { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+ <div class="auth-card">
+  <h1 class="auth-title">Architect Tycoon</h1>
+  <p class="auth-subtitle">Система доступа к проектированию</p>
+  <div class="auth-tabs">
+   <button class="auth-tab active" data-tab="login">Вход</button>
+   <button class="auth-tab" data-tab="register">Регистрация</button>
+  </div>
+  <form id="login-form" class="auth-form">
+   <div class="form-field"><label>Имя пользователя</label><input type="text" name="username" required autocomplete="username"></div>
+   <div class="form-field"><label>Пароль</label><input type="password" name="password" required autocomplete="current-password"></div>
+   <button type="submit" class="btn-primary">Войти</button>
+  </form>
+  <form id="register-form" class="auth-form" hidden>
+   <div class="form-field"><label>Имя пользователя</label><input type="text" name="username" required autocomplete="username"></div>
+   <div class="form-field"><label>Пароль</label><input type="password" name="password" required autocomplete="new-password"></div>
+   <div class="form-field"><label>Код доступа</label><input type="text" name="access_code" required></div>
+   <button type="submit" class="btn-primary">Зарегистрироваться</button>
+  </form>
+  <div id="auth-message" class="auth-message" hidden></div>
+ </div>
+</div>
+
+<div id="game-screen" hidden>
+ <header class="app-header">
+  <div class="logo">Architect Tycoon</div>
+  <div class="header-right">
+   <span class="player-badge">👤 <span id="player-name"></span></span>
+   <button id="leaderboard-btn" class="btn-ghost">🏆 Лидерборд</button>
+   <button id="logout-btn" class="btn-ghost">Выход</button>
+  </div>
+ </header>
+ <main class="game-main">
+  <section class="left-col">
+   <div class="dp-card">
+    <div class="dp-label">DESIGN POINTS</div>
+    <div class="dp-value" id="dp-value">0</div>
+    <div class="dp-rate" id="dp-rate">+0 / сек</div>
+   </div>
+   <button id="main-click-btn" class="main-click-btn">
+    <div class="click-icon">🏗</div>
+    <div class="click-title">Разместить ТК на ТР</div>
+    <div class="click-hint" id="click-hint">+1 DP за клик</div>
+   </button>
+   <div id="active-effects" class="active-effects"></div>
+   <div id="event-banner" class="event-banner" hidden></div>
+   <div>
+    <div class="section-title">ДОСТИЖЕНИЯ</div>
+    <div id="achievements-list" class="achievements-list"></div>
+   </div>
+   <button id="reset-btn" class="btn-text-muted">Сбросить прогресс</button>
+  </section>
+  <section class="right-col">
+   <div class="section-title">СУЩНОСТИ</div>
+   <div id="entities-list"></div>
+   <div class="section-title">ПРОКАЧКИ</div>
+   <div id="upgrades-list"></div>
+  </section>
+ </main>
+</div>
+
+<div id="leaderboard-modal" class="modal-backdrop" hidden>
+ <div class="modal-card">
+  <div class="modal-header">
+   <h2>🏆 Топ архитекторов</h2>
+   <button class="modal-close" id="leaderboard-close">×</button>
+  </div>
+  <div id="leaderboard-list"></div>
+  <div class="modal-footer"><button class="btn-ghost" id="leaderboard-refresh">Обновить</button></div>
+ </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// API
+async function api(path, method="GET", body=null) {
+ const opts = { method, credentials:"include", headers:{"Content-Type":"application/json"} };
+ if (body) opts.body = JSON.stringify(body);
+ let res;
+ try { res = await fetch(path, opts); } catch (e) { throw {status:0,error:"network error"}; }
+ let data = {};
+ try { data = await res.json(); } catch (e) {}
+ if (!res.ok) throw { status:res.status, error:data.error||"unknown error" };
+ return data;
+}
+function escapeHtml(str) { const d=document.createElement("div"); d.textContent=str; return d.innerHTML; }
+function formatNumber(n, decimals=0) {
+ if (n<1000) return Number(n).toFixed(decimals).replace(/\.0+$/,"");
+ if (n<1e6) return (n/1000).toFixed(1)+"K";
+ if (n<1e9) return (n/1e6).toFixed(1)+"M";
+ if (n<1e12) return (n/1e9).toFixed(1)+"B";
+ return (n/1e12).toFixed(1)+"T";
+}
+function showAuthScreen() { document.getElementById("auth-screen").hidden=false; document.getElementById("game-screen").hidden=true; }
+function showGameScreen(username) { document.getElementById("auth-screen").hidden=true; document.getElementById("game-screen").hidden=false; document.getElementById("player-name").textContent=username; }
+
+// Auth
+document.querySelectorAll(".auth-tab").forEach(tab => {
+ tab.addEventListener("click", () => {
+  document.querySelectorAll(".auth-tab").forEach(t=>t.classList.remove("active"));
+  tab.classList.add("active");
+  document.getElementById("login-form").hidden = tab.dataset.tab !== "login";
+  document.getElementById("register-form").hidden = tab.dataset.tab !== "register";
+  hideAuthMessage();
+ });
+});
+function showAuthMessage(text,type) { const el=document.getElementById("auth-message"); el.textContent=text; el.className="auth-message "+type; el.hidden=false; }
+function hideAuthMessage() { document.getElementById("auth-message").hidden=true; }
+function translateAuthError(err) {
+ if (err.status===0) return "Сервер недоступен. Проверьте подключение";
+ if (err.status===400) return err.error||"Проверьте формат данных";
+ if (err.status===401) return "Неверное имя пользователя или пароль";
+ if (err.status===403) return err.error||"Неверный код доступа";
+ if (err.status===409) return "Имя пользователя уже занято";
+ if (err.status>=500) return "Ошибка сервера. Попробуйте позже";
+ return err.error||"Неизвестная ошибка";
+}
+
+// Инициализация игры
+function freshState() {
+ return {
+  dp: 0, clickPower: 1, totalClicks: 0,
+  entities: { tk:{owned:0,busy:0}, tv:{owned:0}, iv:{owned:0,disabled:0}, api:{owned:0}, ms:{owned:0}, domain:{owned:0}, platform:{owned:0}, ecosystem:{owned:0} },
+  upgrades: [], achievements: [], activeEffects: [],
+  stats: { eventsSurvived:0, eventsMissed:0, consecutiveSurvived:0 }, last_save: 0
+ };
+}
+let state = freshState();
+
+// Configs
+const ENTITIES = [
+ {id:"tk",name:"Технический Компонент",desc:"Базовый кирпич архитектуры",icon:"🧱",baseCost:15,baseRate:0.1},
+ {id:"tv",name:"Точка Взаимодействия",desc:"Контракт обмена данными",icon:"🔘",baseCost:100,baseRate:1},
+ {id:"iv",name:"Интеграционное Взаимодействие",desc:"Связь между двумя ТК",icon:"🔗",baseCost:1100,baseRate:8},
+ {id:"api",name:"API-контракт",desc:"Согласованный интерфейс",icon:"📜",baseCost:12000,baseRate:47},
+ {id:"ms",name:"Микросервис",desc:"Изолированный модуль",icon:"📦",baseCost:130000,baseRate:260},
+ {id:"domain",name:"Ограниченный контекст",desc:"Бизнес-домен",icon:"🗂",baseCost:1400000,baseRate:1400},
+ {id:"platform",name:"Платформа",desc:"Набор переиспользуемых сервисов",icon:"🏛",baseCost:20000000,baseRate:7800},
+ {id:"ecosystem",name:"Экосистема",desc:"Связанный ландшафт систем",icon:"🌐",baseCost:330000000,baseRate:44000}
+];
+const UPGRADES = [
+ {id:"review",name:"Code Review",desc:"×2 к клику",cost:100,unlock:()=>state.totalClicks>=10},
+ {id:"adr",name:"ADR",desc:"×2 ко всем сущностям",cost:500,unlock:()=>state.entities.tk.owned>=1},
+ {id:"uek",name:"Согласовать с УЭК",desc:"×2 к ИВ",cost:3000,unlock:()=>state.entities.iv.owned>=2},
+ {id:"dka",name:"Согласовать с ДКА",desc:"×2 к ИВ",cost:7500,unlock:()=>state.entities.iv.owned>=3},
+ {id:"devops",name:"DevOps практики",desc:"×2 ко всем сущностям",cost:50000,unlock:()=>totalEntitiesOwned()>=10},
+ {id:"contract",name:"Контрактное тестирование",desc:"×3 к API",cost:250000,unlock:()=>state.entities.api.owned>=5},
+ {id:"mesh",name:"Service Mesh",desc:"×3 к микросервисам",cost:2000000,unlock:()=>state.entities.ms.owned>=10},
+ {id:"platformeng",name:"Platform Engineering",desc:"×3 к платформам",cost:50000000,unlock:()=>state.entities.platform.owned>=1}
+];
+
+// Utilities
+function totalEntitiesOwned() { let s=0; for(const k in state.entities) s+=state.entities[k].owned; return s; }
+function getEntityConfig(id) { return ENTITIES.find(e=>e.id===id); }
+function getCost(entityId) { const cfg=getEntityConfig(entityId); return Math.floor(cfg.baseCost*Math.pow(1.15,state.entities[entityId].owned)); }
+function isEntityUnlocked(entityId) {
+ const e=state.entities;
+ switch(entityId) {
+  case "tk": return true; case "tv": return e.tk.owned>=1; case "iv": return e.tk.owned>=2;
+  case "api": return e.iv.owned>=1; case "ms": return e.api.owned>=1;
+  case "domain": return e.ms.owned>=3; case "platform": return e.domain.owned>=2;
+  case "ecosystem": return e.platform.owned>=2;
+ } return false;
+}
+
+// Income calculation
+function calculateDpPerSec() {
+ if (!state || !state.entities || !state.upgrades) return 0;
+ 
+ let total=0;
+ const upgrades = state.upgrades || [];
+ 
+ const adrMul = upgrades.includes("adr") ? 2 : 1;
+ const devopsMul = upgrades.includes("devops") ? 2 : 1;
+ const apiMul = upgrades.includes("contract") ? 3 : 1;
+ const msMul = upgrades.includes("mesh") ? 3 : 1;
+ const platMul = upgrades.includes("platformeng") ? 3 : 1;
+ const uekMul = upgrades.includes("uek") ? 2 : 1;
+ const dkaMul = upgrades.includes("dka") ? 2 : 1;
+ 
+ const baseGlobal = adrMul * devopsMul;
+ 
+ const entities = state.entities || {};
+ for(const cfg of ENTITIES) {
+  const e = entities[cfg.id] || { owned: 0, disabled: 0 };
+  const owned = e.owned || 0;
+  const disabled = e.disabled || 0;
+  
+  let rate = cfg.baseRate * owned * baseGlobal;
+  
+  if(cfg.id === "iv") rate *= uekMul * dkaMul;
+  if(cfg.id === "api") rate *= apiMul;
+  if(cfg.id === "ms") rate *= msMul;
+  if(cfg.id === "platform") rate *= platMul;
+  
+  if(cfg.id === "iv" && owned > 0 && disabled > 0) {
+   rate *= Math.max(0, (owned - disabled) / owned);
+  }
+  
+  total += rate;
+ }
+ 
+ let zeroIncome = false;
+ for(const eff of (state.activeEffects || [])) {
+  if(eff.type === "income_x2") total *= 2;
+  if(eff.type === "income_zero") zeroIncome = true;
+  if(eff.type === "income_boost") total *= 1.2;
+  if(eff.type === "iv_half" && entities.iv) {
+   const ivOwned = entities.iv.owned || 0;
+   const ivDisabled = entities.iv.disabled || 0;
+   const ivCfg = getEntityConfig("iv");
+   const ivRate = ivCfg.baseRate * ivOwned * baseGlobal * uekMul * dkaMul;
+   if(ivOwned > 0) {
+    total -= ivRate * 0.5 * Math.max(0, (ivOwned - ivDisabled) / ivOwned);
+   }
+  }
+ }
+ 
+ return zeroIncome ? 0 : Math.max(0, total);
+}
+function getEffectiveClickPower() { let p=state.clickPower; for(const eff of state.activeEffects) if(eff.type==="click_x3") p*=3; return p; }
+
+// Purchases
+function buyEntity(entityId) {
+ const cost=getCost(entityId);
+ if(state.dp<cost) return false;
+ if(entityId==="iv") {
+  const freeTk=state.entities.tk.owned-state.entities.tk.busy;
+  if(freeTk<2) return false;
+  state.entities.tk.busy+=2;
+ }
+ state.dp-=cost; state.entities[entityId].owned+=1;
+ if(typeof renderAll==="function") renderAll();
+ flashCard(entityId);
+ if(typeof scheduleSave==="function") scheduleSave();
+ return true;
+}
+function buyUpgrade(upgradeId) {
+ const cfg=UPGRADES.find(u=>u.id===upgradeId);
+ if(!cfg||state.upgrades.includes(upgradeId)||state.dp<cfg.cost) return false;
+ state.dp-=cfg.cost; state.upgrades.push(upgradeId);
+ if(upgradeId==="review") state.clickPower*=2;
+ if(typeof renderAll==="function") renderAll();
+ if(typeof scheduleSave==="function") scheduleSave();
+ return true;
+}
+function showFloatText(e,text) {
+ const btn=e.currentTarget, rect=btn.getBoundingClientRect(), el=document.createElement("div");
+ el.className="float-text"; el.textContent=text;
+ el.style.left=(e.clientX-rect.left)+"px"; el.style.top=(e.clientY-rect.top)+"px";
+ btn.appendChild(el); setTimeout(()=>el.remove(),800);
+}
+function flashCard(entityId) {
+ const card=document.querySelector(`[data-entity-id="${entityId}"]`);
+ if(card) { card.classList.add("flash"); setTimeout(()=>card.classList.remove("flash"),300); }
+}
+
+// Events
+const EVENTS = [
+ {id:"prod_down",type:"negative",title:"Прод упал!",desc:"Срочно нужен хотфикс",btnText:"Хотфикс",
+  available:()=>true, onClick:()=>addEffect({type:"click_x3",duration:10000,label:"Хотфикс ×3"}),
+  onMiss:()=>{ state.dp=Math.max(0,state.dp*0.95); }},
+ {id:"contract_broken",type:"negative",title:"Сломался контракт!",desc:"Один из API-контрактов перестал работать",btnText:"Исправить",
+  available:()=>true, onClick:()=>{ state.dp+=500; },
+  onMiss:()=>addEffect({type:"income_zero",duration:10000,label:"Простой"})},
+ {id:"legacy",type:"negative",title:"Легаси требует рефакторинга",desc:"Можно потерпеть боль ради бонуса",btnText:"Рефакторить",
+  available:()=>true, onClick:()=>{ state.dp=Math.max(0,state.dp*0.9); addEffect({type:"income_boost",duration:30000,label:"Рефакторинг +20%"}); }},
+ {id:"uek_reject",type:"negative",title:"УЭК не согласовал ИВ",desc:"Один из элементов интеграции под вопросом",btnText:"Принять компенсацию",
+  available:()=>state.entities.iv.owned>=1, weight:()=>state.upgrades.includes("uek")?0.5:1,
+  onClick:()=>{ state.dp+=1000; }, onMiss:()=>disableOneIv(20000)},
+ {id:"dka_reject",type:"negative",title:"Архитектор не согласовал ИВ",desc:"Все ИВ под вопросом",btnText:"Принять компенсацию",
+  available:()=>state.entities.iv.owned>=1, weight:()=>state.upgrades.includes("dka")?0.5:1,
+  onClick:()=>{ state.dp+=2000; }, onMiss:()=>addEffect({type:"iv_half",duration:30000,label:"ИВ −50%"})},
+ {id:"good_review",type:"positive",title:"Удачный код-ревью!",desc:"Команда работает на отлично",btnText:"Получить бонус",
+  available:()=>true, onClick:()=>{ state.dp+=calculateDpPerSec()*30; }},
+ {id:"committee",type:"positive",title:"Архитектурный комитет одобрил!",desc:"Все проекты на ускорение",btnText:"Ускориться",
+  available:()=>true, onClick:()=>addEffect({type:"income_x2",duration:20000,label:"Комитет ×2"})},
+ {id:"found_component",type:"positive",title:"Найден переиспользуемый компонент",desc:"Бесплатный ТК в коллекцию",btnText:"Взять",
+  available:()=>true, onClick:()=>{ state.entities.tk.owned+=1; }}
+];
+let currentEvent=null, eventTimeout=null;
+function spawnEvent() {
+ if(currentEvent) { scheduleNextEvent(); return; }
+ const available=EVENTS.filter(e=>e.available());
+ if(available.length===0) { scheduleNextEvent(); return; }
+ const pool=[];
+ for(const ev of available) { const w=ev.weight?ev.weight():1; if(Math.random()<w) pool.push(ev); }
+ const finalPool=pool.length?pool:available;
+ currentEvent=finalPool[Math.floor(Math.random()*finalPool.length)];
+ showEventBanner(currentEvent);
+ eventTimeout=setTimeout(()=>{
+  if(currentEvent.onMiss) currentEvent.onMiss();
+  state.stats.eventsMissed+=1; state.stats.consecutiveSurvived=0;
+  hideEventBanner(); currentEvent=null; renderAll(); scheduleSave(); scheduleNextEvent();
+ },15000);
+}
+function handleEventClick() {
+ if(!currentEvent) return;
+ clearTimeout(eventTimeout);
+ currentEvent.onClick();
+ if(currentEvent.type==="negative") { state.stats.eventsSurvived+=1; state.stats.consecutiveSurvived+=1; }
+ hideEventBanner(); currentEvent=null; checkAchievements(); renderAll(); scheduleSave(); scheduleNextEvent();
+}
+function scheduleNextEvent() {
+ const delay=45000+Math.random()*45000; setTimeout(spawnEvent,delay);
+}
+function showEventBanner(ev) {
+ const banner=document.getElementById("event-banner");
+ banner.className="event-banner "+ev.type;
+ banner.innerHTML=`<div class="event-title">${ev.type==="negative"?"⚠":"🎉"} ${escapeHtml(ev.title)}</div>
+  <div class="event-desc">${escapeHtml(ev.desc)}</div>
+  <button class="event-btn">${escapeHtml(ev.btnText)}</button>`;
+ banner.querySelector(".event-btn").addEventListener("click",handleEventClick);
+ banner.hidden=false;
+}
+function hideEventBanner() { document.getElementById("event-banner").hidden=true; }
+
+// Effects
+function addEffect(eff) { eff.id="eff_"+Date.now()+Math.random(); eff.expiresAt=Date.now()+eff.duration; state.activeEffects.push(eff); renderActiveEffects(); }
+function tickEffects() {
+ const now=Date.now(), before=state.activeEffects.length;
+ state.activeEffects=state.activeEffects.filter(e=>e.expiresAt>now);
+ if(state.activeEffects.length!==before) renderActiveEffects();
+}
+function renderActiveEffects() {
+ const container=document.getElementById("active-effects"); container.innerHTML="";
+ for(const eff of state.activeEffects) { const el=document.createElement("div"); el.className="effect-chip"; el.textContent=eff.label; container.appendChild(el); }
+}
+function disableOneIv(duration) {
+ if(state.entities.iv.owned===0) return;
+ state.entities.iv.disabled=Math.min(state.entities.iv.owned,state.entities.iv.disabled+1);
+ setTimeout(()=>{ state.entities.iv.disabled=Math.max(0,state.entities.iv.disabled-1); },duration);
+}
+
+// Achievements
+const ACHIEVEMENTS = [
+ {id:"first_click",icon:"🎯",name:"Первый коммит",check:()=>state.totalClicks>=1},
+ {id:"first_tk",icon:"🏗",name:"Архитектор-джуниор",check:()=>state.entities.tk.owned>=1},
+ {id:"first_iv",icon:"🔗",name:"Первая интеграция",check:()=>state.entities.iv.owned>=1},
+ {id:"ten_iv",icon:"📐",name:"10 интеграций",check:()=>state.entities.iv.owned>=10},
+ {id:"first_api",icon:"✅",name:"Согласовано без правок",check:()=>state.entities.api.owned>=1},
+ {id:"uek_upgrade",icon:"🛡",name:"Зелёный свет от УЭК",check:()=>state.upgrades.includes("uek")},
+ {id:"dka_upgrade",icon:"🏛",name:"Благословение ДКА",check:()=>state.upgrades.includes("dka")},
+ {id:"zero_downtime",icon:"🚀",name:"Zero Downtime",check:()=>state.stats.consecutiveSurvived>=5},
+ {id:"millionaire",icon:"💎",name:"Архитектор года",check:()=>state.dp>=1000000},
+ {id:"first_platform",icon:"🌐",name:"Платформенный мыслитель",check:()=>state.entities.platform.owned>=1},
+ {id:"first_eco",icon:"♾",name:"Экосистемный архитектор",check:()=>state.entities.ecosystem.owned>=1}
+];
+function checkAchievements() {
+ for(const ach of ACHIEVEMENTS) {
+  if(state.achievements.includes(ach.id)) continue;
+  if(ach.check()) { state.achievements.push(ach.id); showAchievementToast(ach); renderAchievements(); }
+ }
+}
+function renderAchievements() {
+ const container=document.getElementById("achievements-list"); container.innerHTML="";
+ for(const ach of ACHIEVEMENTS) {
+  const el=document.createElement("div"); el.className="achievement"+(state.achievements.includes(ach.id)?" got":"");
+  el.title=ach.name; el.textContent=ach.icon; container.appendChild(el);
+ }
+}
+function showAchievementToast(ach) {
+ const container=document.getElementById("toast-container"), toast=document.createElement("div");
+ toast.className="toast";
+ toast.innerHTML=`<div class="toast-icon">${ach.icon}</div>
+  <div><div class="toast-label">Получено достижение</div><div class="toast-name">${escapeHtml(ach.name)}</div></div>`;
+ container.appendChild(toast); setTimeout(()=>toast.remove(),3000);
+}
+
+// Leaderboard
+async function openLeaderboard() { document.getElementById("leaderboard-modal").hidden=false; await loadLeaderboard(); }
+function closeLeaderboard() { document.getElementById("leaderboard-modal").hidden=true; }
+async function loadLeaderboard() {
+ const container=document.getElementById("leaderboard-list");
+ container.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted)">Загрузка...</div>';
+ try {
+  const res=await api("/api/leaderboard");
+  if(!res.top||res.top.length===0) {
+   container.innerHTML=`<div style="text-align:center;padding:40px;color:var(--text-muted)">
+    <div style="font-size:48px;margin-bottom:12px">🏆</div><div>Пока никто не набрал очков</div><div>Будь первым!</div>
+   </div>`;
+   return;
+  }
+  const myName=document.getElementById("player-name").textContent;
+  container.innerHTML=res.top.map((row,i)=>`<div class="leaderboard-row ${row.username===myName?"me":""}">
+   <div class="leaderboard-rank">${i+1}</div>
+   <div class="leaderboard-username">${escapeHtml(row.username)}${row.username===myName?" (вы)":""}</div>
+   <div class="leaderboard-dp">${formatNumber(row.dp)} DP</div>
+  </div>`).join("");
+ } catch(err) {
+  container.innerHTML=`<div style="color:var(--danger);text-align:center;padding:20px">Не удалось загрузить лидерборд</div>`;
+ }
+}
+
+// Render functions
+let saveTimer=null;
+function scheduleSave() { if(saveTimer) return; saveTimer=setTimeout(()=>{ saveGame(); saveTimer=null; },2000); }
+async function saveGame() {
+ // Всегда обновляем last_save текущим временем
+ state.last_save = Date.now();
+ try { localStorage.setItem("architectTycoonBackup",JSON.stringify(state)); } catch(e) {}
+ try { await api("/api/save","POST",{state}); } catch(err) {
+  if(err.status===401) { showAuthScreen(); showAuthMessage("Сессия истекла. Войдите снова","error"); }
+ }
+}
+function mergeState(defaults,loaded) {
+ const result={...defaults,...loaded};
+ // Объединяем entities корректно - загруженные entities заменяют default
+ if(loaded.entities) {
+  result.entities={...defaults.entities,...loaded.entities};
+ } else {
+  result.entities={...defaults.entities};
+ }
+ result.stats={...defaults.stats,...(loaded.stats||{})};
+ // Объединяем upgrades
+ result.upgrades=loaded.upgrades? [...(loaded.upgrades||[])]: [...(defaults.upgrades||[])];
+ result.achievements=loaded.achievements? [...(loaded.achievements||[])]: [...(defaults.achievements||[])];
+ result.activeEffects=loaded.activeEffects? [...(loaded.activeEffects||[])]: [...(defaults.activeEffects||[])];
+ // Восстанавливаем clickPower из загруженного состояния
+ result.clickPower=loaded.clickPower!==undefined ? loaded.clickPower : defaults.clickPower;
+ result.last_save=loaded.last_save||0;
+ result.offline_bonus=loaded.offline_bonus||null;
+ // Восстанавливаем dp из загруженного состояния
+ result.dp=loaded.dp!==undefined ? loaded.dp : defaults.dp;
+ return result;
+}
+async function loadGame() {
+ try {
+  const res=await api("/api/load");
+  if(res.state) {
+   state=mergeState(freshState(),res.state);
+   console.log("GameState loaded:", state);
+   console.log("Entities:", state.entities);
+   console.log("Upgrades:", state.upgrades);
+   console.log("DP/sec:", calculateDpPerSec());
+   // Показываем уведомление об offline-бонусе
+   if(res.state.offline_bonus) {
+    const {earned,time_sec}=res.state.offline_bonus;
+    showAuthMessage(`+${formatNumber(earned)} DP за время отсутствия (${Math.round(time_sec)} сек)`, "success");
+   }
+  } else {
+   console.log("Fresh state - no saved data");
+  }
+ } catch(err) {
+  console.error("Load game error:", err);
+  try { const backup=localStorage.getItem("architectTycoonBackup");
+   if(backup) state=mergeState(freshState(),JSON.parse(backup));
+  } catch(e) {}
+ }
+ renderAll(); startGameLoop();
+}
+
+// Render
+function renderDp() {
+ const el=document.getElementById("dp-value");
+ el.textContent=formatNumber(Math.floor(state.dp));
+ el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick");
+ document.getElementById("dp-rate").textContent="+"+formatNumber(calculateDpPerSec(),1)+" / сек";
+ document.getElementById("click-hint").textContent="+"+formatNumber(getEffectiveClickPower())+" DP за клик";
+}
+function renderEntities() {
+ const container=document.getElementById("entities-list"); container.innerHTML="";
+ for(const cfg of ENTITIES) {
+  if(!isEntityUnlocked(cfg.id)) continue;
+  const e=state.entities[cfg.id], cost=getCost(cfg.id), affordable=state.dp>=cost;
+  let blocked=false, blockMsg="";
+  if(cfg.id==="iv") { const freeTk=state.entities.tk.owned-state.entities.tk.busy; if(freeTk<2) { blocked=true; blockMsg="⚠ Нужно "+(2-freeTk)+" свободных ТК"; } }
+  const ownedText=cfg.id==="tk"?((e.owned-e.busy)+" свобод / "+e.owned+" всего"):"куплено: "+e.owned;
+  const progressPct=Math.min(100,(state.dp/cost)*100);
+  const card=document.createElement("div"); card.className="entity-card";
+  if(affordable&&!blocked) card.classList.add("affordable"); if(blocked) card.classList.add("locked");
+  card.dataset.entityId=cfg.id;
+  card.innerHTML=`<div class="entity-header"><div class="entity-icon">${cfg.icon}</div>
+   <div style="flex:1"><div class="entity-name">${cfg.name}</div><div class="entity-desc">${cfg.desc}</div></div>
+  </div><div class="entity-row"><div class="entity-cost ${affordable?"":"unaffordable"}">${formatNumber(cost)} DP</div><div class="entity-owned">${ownedText}</div></div>
+  <div class="entity-progress"><div class="entity-progress-fill" style="width:${progressPct}%"></div></div>
+  ${blocked?`<div class="entity-block-msg">${blockMsg}</div>`:""}`;
+  if(affordable&&!blocked) card.addEventListener("click",()=>buyEntity(cfg.id));
+  container.appendChild(card);
+ }
+}
+function renderUpgrades() {
+ const container=document.getElementById("upgrades-list"); container.innerHTML="";
+ for(const cfg of UPGRADES) {
+  if(!cfg.unlock()) continue;
+  const purchased=state.upgrades.includes(cfg.id), affordable=state.dp>=cfg.cost;
+  const card=document.createElement("div");
+  card.className="entity-card upgrade-card";
+  if(purchased) card.classList.add("purchased"); else if(affordable) card.classList.add("affordable");
+  card.innerHTML=`<div class="entity-header"><div style="flex:1">
+   <div class="entity-name">${cfg.name}${purchased?" ✓":""}</div><div class="entity-desc">${cfg.desc}</div>
+  </div></div>
+  ${purchased?"":`<div class="entity-row"><div class="entity-cost ${affordable?"":"unaffordable"}">${formatNumber(cfg.cost)} DP</div></div>`}`;
+  if(!purchased&&affordable) card.addEventListener("click",()=>buyUpgrade(cfg.id));
+  container.appendChild(card);
+ }
+ if(container.innerHTML==="") container.innerHTML=`<div style="color:var(--text-muted); font-size:12px; padding:12px 0">Купи первый компонент, чтобы открыть прокачки</div>`;
+}
+function renderAll() { 
+ console.log("Rendering - DP:", state.dp, "DP/sec:", calculateDpPerSec(), "Entities:", state.entities);
+ renderDp(); 
+ renderEntities(); 
+ renderUpgrades(); 
+ renderActiveEffects(); 
+ renderAchievements(); 
+}
+
+// Game loop
+let gameLoopStarted=false;
+function startGameLoop() {
+ if(gameLoopStarted) return; gameLoopStarted=true;
+ setInterval(()=>{ state.dp+=calculateDpPerSec()/10; },100);
+ setInterval(()=>{ renderAll(); },1000);
+ setInterval(()=>{ saveGame(); },10000);
+}
+
+// Event handlers
+document.getElementById("main-click-btn").addEventListener("click", (e) => {
+ const gain=getEffectiveClickPower(); state.dp+=gain; state.totalClicks+=1;
+ showFloatText(e,"+"+formatNumber(gain)+" DP");
+ if(typeof renderAll==="function") renderAll();
+ if(typeof scheduleSave==="function") scheduleSave();
+});
+
+document.getElementById("logout-btn").addEventListener("click", async ()=>{
+ try { await api("/api/logout","POST"); } catch(e) {}
+ showAuthScreen();
+});
+
+document.getElementById("leaderboard-btn").addEventListener("click",openLeaderboard);
+document.getElementById("leaderboard-close").addEventListener("click",closeLeaderboard);
+document.getElementById("leaderboard-refresh").addEventListener("click",loadLeaderboard);
+document.getElementById("leaderboard-modal").addEventListener("click",(e)=>{ if(e.target.id==="leaderboard-modal") closeLeaderboard(); });
+document.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeLeaderboard(); });
+
+document.getElementById("reset-btn").addEventListener("click",async ()=>{
+ if(!confirm("Сбросить весь прогресс?")) return; state=freshState(); await saveGame(); renderAll();
+});
+
+// Auth forms
+document.getElementById("login-form").addEventListener("submit",async (e)=>{
+ e.preventDefault(); hideAuthMessage();
+ const data=Object.fromEntries(new FormData(e.target));
+ const btn=e.target.querySelector("button[type=submit]"), originalText=btn.textContent;
+ btn.disabled=true; btn.textContent="...";
+ try { const res=await api("/api/login","POST",data); showGameScreen(res.username); await loadGame(); }
+ catch(err) { showAuthMessage(translateAuthError(err),"error"); }
+ finally { btn.disabled=false; btn.textContent=originalText; }
+});
+
+document.getElementById("register-form").addEventListener("submit",async (e)=>{
+ e.preventDefault(); hideAuthMessage();
+ const data=Object.fromEntries(new FormData(e.target));
+ const btn=e.target.querySelector("button[type=submit]"), originalText=btn.textContent;
+ btn.disabled=true; btn.textContent="...";
+ try { await api("/api/register","POST",data); showAuthMessage("Аккаунт создан. Войдите.","success"); document.querySelector('.auth-tab[data-tab="login"]').click(); }
+ catch(err) { showAuthMessage(translateAuthError(err),"error"); }
+ finally { btn.disabled=false; btn.textContent=originalText; }
+});
+
+// Init
+window.addEventListener("load",async ()=>{
+ try { const me=await api("/api/me"); showGameScreen(me.username); await loadGame(); }
+ catch(err) { showAuthScreen(); }
+ setTimeout(()=>{ startGameLoop(); spawnEvent(30000); },150);
+});
+
+// Проверка на старую сессию - если состояние загружается пустым, возможно это старое cookie
+setTimeout(async ()=>{
+ try {
+  const res = await api("/api/load");
+  // Загружаем состояние
+  if(res.state === null) {
+   console.log("No saved state - starting fresh");
+  }
+ } catch(e) { console.log("Load check error:", e); }
+}, 1000);
+
+window.addEventListener("beforeunload",()=>{ try{ localStorage.setItem("architectTycoonBackup",JSON.stringify(state)); }catch(e){} });
+</script>
+</body>
+</html>
