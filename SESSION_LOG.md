@@ -259,7 +259,7 @@ function mergeState(defaults, loaded) {
 
 ### Код доступа
 Было: `ARCHITECT2026`  
-Стало: `ILOVEVIBECODING_COMMUNITY`
+Стало: `🔒 Скрыто`
 
 ### Название проекта
 Было: `Architect Tycoon`  
@@ -357,7 +357,7 @@ tar -czf backup-$(date +%Y%m%d).tar.gz game.db
 - Offline earning с `last_save`
 - `mergeState()` для надёжного восстановления состояния
 
-**Код доступа:** `ILOVEVIBECODING_COMMUNITY`
+**Код доступа:** `🔒 Скрыто`
 
 ---
 

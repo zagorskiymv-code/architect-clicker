@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # ===== КОНФИГ =====
 SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me-in-production")
-ACCESS_CODE = os.environ.get("ACCESS_CODE", "ILOVEVIBECODING_COMMUNITY")
+ACCESS_CODE = os.environ.get("ACCESS_CODE", "VIBECODING_CHALLENGE")
 DB_PATH = os.environ.get("DB_PATH", "game.db")
 USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9_]{3,20}$")
 MIN_PASSWORD_LENGTH = 6
