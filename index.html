@@ -462,6 +462,46 @@ function calculateDpPerSec() {
  
  return zeroIncome ? 0 : Math.max(0, total);
 }
+
+// Calculate base revenue (display only) - excludes temporary effects
+function calculateDpPerSecDisplay() {
+ if (!state || !state.entities || !state.upgrades) return 0;
+ 
+ let total=0;
+ const upgrades = state.upgrades || [];
+ 
+ const adrMul = upgrades.includes("adr") ? 2 : 1;
+ const devopsMul = upgrades.includes("devops") ? 2 : 1;
+ const apiMul = upgrades.includes("contract") ? 3 : 1;
+ const msMul = upgrades.includes("mesh") ? 3 : 1;
+ const platMul = upgrades.includes("platformeng") ? 3 : 1;
+ const uekMul = upgrades.includes("uek") ? 2 : 1;
+ const dkaMul = upgrades.includes("dka") ? 2 : 1;
+ 
+ const baseGlobal = adrMul * devopsMul;
+ 
+ const entities = state.entities || {};
+ for(const cfg of ENTITIES) {
+  const e = entities[cfg.id] || { owned: 0, disabled: 0 };
+  const owned = e.owned || 0;
+  const disabled = e.disabled || 0;
+  
+  let rate = cfg.baseRate * owned * baseGlobal;
+  
+  if(cfg.id === "iv") rate *= uekMul * dkaMul;
+  if(cfg.id === "api") rate *= apiMul;
+  if(cfg.id === "ms") rate *= msMul;
+  if(cfg.id === "platform") rate *= platMul;
+  
+  if(cfg.id === "iv" && owned > 0 && disabled > 0) {
+   rate *= Math.max(0, (owned - disabled) / owned);
+  }
+  
+  total += rate;
+ }
+ 
+ return Math.max(0, total);
+}
 function getEffectiveClickPower() { let p=state.clickPower; for(const eff of state.activeEffects) if(eff.type==="click_x3") p*=3; return p; }
 
 // Purchases
@@ -516,7 +556,7 @@ const EVENTS = [
   available:()=>state.entities.iv.owned>=1, weight:()=>state.upgrades.includes("dka")?0.5:1,
   onClick:()=>{ state.dp+=2000; }, onMiss:()=>addEffect({type:"iv_half",duration:30000,label:"ИВ −50%"})},
  {id:"good_review",type:"positive",title:"Удачный код-ревью!",desc:"Команда работает на отлично",btnText:"Получить бонус",
-  available:()=>true, onClick:()=>{ state.dp+=calculateDpPerSec()*30; }},
+  available:()=>true, onClick:()=>{ state.dp+=calculateDpPerSecDisplay()*30; }},
  {id:"committee",type:"positive",title:"Архитектурный комитет одобрил!",desc:"Все проекты на ускорение",btnText:"Ускориться",
   available:()=>true, onClick:()=>addEffect({type:"income_x2",duration:20000,label:"Комитет ×2"})},
  {id:"found_component",type:"positive",title:"Найден переиспользуемый компонент",desc:"Бесплатный ТК в коллекцию",btnText:"Взять",
@@ -718,7 +758,7 @@ function renderDp() {
  const el=document.getElementById("dp-value");
  el.textContent=formatNumber(Math.floor(state.dp));
  el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick");
- document.getElementById("dp-rate").textContent="+"+formatNumber(calculateDpPerSec(),1)+" / сек";
+ document.getElementById("dp-rate").textContent="+"+formatNumber(calculateDpPerSecDisplay(),1)+" / сек";
  document.getElementById("click-hint").textContent="+"+formatNumber(getEffectiveClickPower())+" DP за клик";
 }
 function renderEntities() {
@@ -772,7 +812,7 @@ function renderAll() {
 let gameLoopStarted=false;
 function startGameLoop() {
  if(gameLoopStarted) return; gameLoopStarted=true;
- setInterval(()=>{ state.dp+=calculateDpPerSec()/10; },100);
+ setInterval(()=>{ state.dp+=calculateDpPerSecDisplay()/10; },100);
  setInterval(()=>{ renderAll(); },1000);
  setInterval(()=>{ saveGame(); },10000);
 }
